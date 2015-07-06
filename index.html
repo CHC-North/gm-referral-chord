@@ -10,25 +10,28 @@
 
 		<style>
 		/* TODO Add general page styling for font and title */
+            body {
+              font: 12px calibri, sans-serif;
+            }
             svg {
                 font: 8px "Ek Mukta", calibri, sans-serif;
             }
-            
+
             #circle circle {
                 fill: #e7f0f5;
                 pointer-events: all;
             }
- 
+
             path.chord {
                 stroke: #666;
                 stroke-width: .5px;
                 fill-opacity: .8;
             }
- 
+
             #circle:hover path.fade {
                 display: none;
             }
-            
+
             .centred
             {
                 text-align: center;
@@ -44,7 +47,7 @@
 		  ga('send', 'pageview');
 
 		</script>
-        <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>		
+        <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
 	</head>
 
 	<body>
@@ -59,7 +62,7 @@
 		<div id="main" class="content centred">
 			<script>
 // TODO Sort out colour scheme
-			    var subjectData = 
+			    var subjectData =
 [{"name":"5 BOROUGHS PARTNERSHIP NHS FT","color":"#FF3333 "},
 {"name":"BOLTON NHS FOUNDATION TRUST","color":"#FF9933 "},
 {"name":"BRIDGEWATER COMMUNITY HEALTHCARE NHS FT","color":"0099CC "},
@@ -90,7 +93,7 @@
 {"name":"NHS WIGAN BOROUGH CCG","color":"#666678"},
 {"name":"OTHER COMMISSIONERS","color":"#666678"}];
 
-			var relationshipMatrix = 
+			var relationshipMatrix =
 [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,208,683],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20595,0,13,3,0,22,27,1671,6,10,7,24,1435,1435],
@@ -162,13 +165,13 @@
                 }),
                 chord = svg.selectAll(".chord").data(layout.chords).enter().append("path").attr("class", "chord").style("fill", function (b) {
                     return subjectData[b.source.index].color
-                }).attr("d", path)   
+                }).attr("d", path)
             </script>
 		</div>
-		
+
 			<p> Based on code by <a href="http://www.infotrafford.org.uk/lab">Trafford Innovation and Intelligence Lab</a> and used with their kind permission.</p></div>
 		<div id="footer"></div>
 		<a href="https://github.com/GMAHSN/gm-referral-chord"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
-		
+
 	</body>
 </html>
