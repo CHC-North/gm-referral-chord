@@ -1,159 +1,246 @@
-﻿<!DOCTYPE HTML>
+
+<!DOCTYPE HTML>
 <meta charset="utf-8">
 <html>
-    <head>
-        <title>GM Primary Care Referrals Visualised - GMAHSN</title>
-        <meta name="author" content="GMAHSN" />
-        <meta name="created" content="2015/04/24" />
-        <meta name="keywords" content="data, visualisation, health, Greater Manchester, GP, referrals, D3, Trafford, lab" />
-		<meta name="description" content="Visualisation of GM referrals data from NHS England. Based on code by Trafford Innovation and Intelligence Lab and used with their kind permission.">
+<head>
+  <title>GM Primary Care Referrals Visualised - GMAHSN</title>
+  <meta name="author" content="GMAHSN" />
+  <meta name="created" content="2015/04/24" />
+  <meta name="keywords" content="data, visualisation, health, Greater Manchester, GP, referrals, D3, Trafford, lab" />
+  <meta name="description" content="Visualisation of GM referrals data from NHS England. Based on code by Trafford Innovation and Intelligence Lab and used with their kind permission.">
 
-		<style>
-		/* TODO Add general page styling for font and title */
-            svg {
-                font: 8px "Ek Mukta", calibri, sans-serif;
-            }
-            
-            #circle circle {
-                fill: #e7f0f5;
-                pointer-events: all;
-            }
- 
-            path.chord {
-                stroke: #666;
-                stroke-width: .5px;
-                fill-opacity: .8;
-            }
- 
-            #circle:hover path.fade {
-                display: none;
-            }
-            
-            .centred
-            {
-                text-align: center;
-            }
-		</style>
-        <script src="/js/d3.v2.min.js?2.8.1"></script>		
-	</head>
+  <style>
+    body {
+      font: 14px calibri, sans-serif;
+    }
 
-	<body>
-		<div id="header">- gm outpatient total referrals - oct to december 2014 -</div>
-        <div id="introduction" class="content fixedWidth">
-			    data source: <a href="http://www.england.nhs.uk/statistics/statistical-work-areas/hospital-activity/quarterly-hospital-activity/">nhs england </a>
-        </div>
-		<div id="main" class="content centred">
-			<script>
-// TODO Sort out colour scheme
-			    var subjectData = 
-[{"name":"5 BOROUGHS PARTNERSHIP NHS FT","color":"#FF3333 "},
-{"name":"BOLTON NHS FOUNDATION TRUST","color":"#FF9933 "},
-{"name":"BRIDGEWATER COMMUNITY HEALTHCARE NHS FT","color":"0099CC "},
-{"name":"CENTRAL MANCHESTER UHNFT","color":"#009999"},
-{"name":"EAST CHESHIRE NHS TRUST","color":"#339933"},
-{"name":"EAST LANCASHIRE HOSPITALS NHS TRUST","color":"#663399"},
-{"name":"MANCHESTER MENTAL HEALTH AND SOCIAL CARE TRUST","color":"#FF3333 "},
-{"name":"OTHER PROVIDERS","color":"#FF9933 "},
-{"name":"PENNINE ACUTE HOSPITALS NHS TRUST","color":"0099CC "},
-{"name":"PENNINE CARE NHS FOUNDATION TRUST","color":"#009999"},
-{"name":"SALFORD ROYAL NHS FOUNDATION TRUST","color":"#339933"},
-{"name":"STOCKPORT NHS FOUNDATION TRUST","color":"#663399"},
-{"name":"TAMESIDE HOSPITAL NHS FOUNDATION TRUST","color":"#FF3333 "},
-{"name":"UNIVERSITY HOSPITAL OF SOUTH MANCHESTER NHS FT","color":"0099CC "},
-{"name":"WRIGHTINGTON, WIGAN AND LEIGH NHS FT","color":"#009999"},
-{"name":"NHS BOLTON CCG","color":"#666678"},
-{"name":"NHS BURY CCG","color":"#666678"},
-{"name":"NHS CENTRAL MANCHESTER CCG","color":"#666678"},
-{"name":"NHS EASTERN CHESHIRE CCG","color":"#666678"},
-{"name":"NHS HEYWOOD, MIDDLETON AND ROCHDALE CCG","color":"#666678"},
-{"name":"NHS NORTH MANCHESTER CCG","color":"#666678"},
-{"name":"NHS OLDHAM CCG","color":"#666678"},
-{"name":"NHS SALFORD CCG","color":"#666678"},
-{"name":"NHS SOUTH MANCHESTER CCG","color":"#666678"},
-{"name":"NHS STOCKPORT CCG","color":"#666678"},
-{"name":"NHS TAMESIDE AND GLOSSOP CCG","color":"#666678"},
-{"name":"NHS TRAFFORD CCG","color":"#666678"},
-{"name":"NHS WIGAN BOROUGH CCG","color":"#666678"},
-{"name":"OTHER COMMISSIONERS","color":"#666678"}];
+    #header {
+      font: 18px calibri, sans-serif;
+    }
 
-			var relationshipMatrix = 
-[
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,208,683],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20595,0,13,3,0,22,27,1671,6,10,7,24,1435,1435],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1065,0,0,80,0,0,0,0,0,0,0,184,2648],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1258,1704,15259,1107,1605,6361,2071,4434,4869,3577,3333,12942,1164,10055],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,8,12569,2,2,8,9,35,568,13,39,4,3242],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,41,50,5,0,19,2,3,5,4,2,3,1,9,32182],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,482,1,11,416,8,8,382,9,7,30,1,25],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2591,1409,1768,2126,3290,2282,2924,3179,1660,1721,82,1459,3052,3052],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,260,12078,324,30,17065,11047,14543,1018,134,77,522,50,54,21194],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,559,1,6,391,17,426,2,8,642,235,0,2,406],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1799,2813,1535,739,1799,2017,1362,20451,1009,1537,1415,1984,2192,4220],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,129,1149,12,39,67,21,146,16833,1190,68,10,4427],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,16,73,1252,7,241,13,601,12,157,16388,13,4,2375],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,230,233,2043,1464,225,404,314,367,8023,3564,581,6499,271,2362],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,424,68,15,64,88,26,48,98,17,49,78,55,21857,4740],
-  [0,20595,0,1258,2,41,0,2591,260,1,1799,9,3,230,424,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,1065,0,1704,1,50,2,1409,12078,559,2813,8,16,233,68,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,13,0,15259,8,5,482,1768,324,1,1535,129,73,2043,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,3,0,1107,12569,0,1,2126,30,6,739,1149,1252,314,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,80,1605,2,19,11,3290,17065,391,1799,12,7,1464,88,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,22,0,6361,2,2,416,3290,11047,17,2017,39,241,225,26,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,27,0,2071,8,3,8,2282,14543,426,1362,67,13,367,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,1671,0,4434,9,5,8,2924,1018,2,20451,21,601,404,98,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [1,6,0,4869,35,4,382,3179,134,8,1009,146,12,8023,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,10,0,3577,568,2,9,1660,77,642,1537,16833,157,3564,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,7,0,3333,13,3,7,82,522,235,1415,1190,16388,581,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,24,0,12942,39,1,30,1459,50,0,1984,68,13,6499,55,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [208,1435,184,1164,4,9,1,1459,54,2,2192,10,4,271,21857,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [683,1474,2648,10055,3242,32182,25,3052,21194,406,4220,4427,2375,2137,4740,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-]
-				;
+    svg {
+      font: 10px "Helvetica Neue", calibri, sans-serif;
+    }
 
-			    var width = 650,
-                height = 650,
-                chord = null,
-                outerRadius = Math.min(width, height) / 2 - 100,
-                innerRadius = outerRadius - 20,
-                r1 = height / 2,
-                r0 = r1 - 120,
-                width = width + 200,
-                height = height + 150,
-                arc = d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius),
-                layout = d3.layout.chord().padding(.04).sortSubgroups(d3.descending).sortChords(d3.ascending),
-                path = d3.svg.chord().radius(innerRadius),
-                svg = d3.select("#main").append("svg").attr("width", width).attr("height", height).append("g").attr("id", "circle").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-			    svg.append("circle").attr("r", outerRadius);
+    #circle circle {
+      fill: #e7f0f5;
+      pointer-events: all;
+    }
 
-			    function b(a, b) {
-			        chord.classed("fade", function (a) {
-			            return a.source.index !== b && a.target.index !== b
-			        })
-			    }
+    path.chord {
+      stroke: #666;
+      stroke-width: .5px;
+      fill-opacity: .8;
+    }
 
-			    layout.matrix(relationshipMatrix);
-			    var d = svg.selectAll(".group");
-			    d.data(layout.groups).enter().append("g").attr("class", "group").on("mouseover", b),
-                svg.selectAll(".group").append("svg:text").each(function (a) {
-                    a.angle = (a.startAngle + a.endAngle) / 2
-                }).attr("dy", ".35em").attr("text-anchor", function (a) {
-                    return a.angle > Math.PI ? "end" : "start"
-                }).attr("transform", function (a) {
-                    return "rotate(" + (180 * a.angle / Math.PI - 90) + ")translate(" + (r0 + 26) + ")" + (a.angle > Math.PI ? "rotate(180)" : "")
-                }).text(function (b, c) { return subjectData[c].name }),
-                svg.selectAll(".group").append("path").attr("id", function (a, b) {
-                    return "group" + b
-                }).attr("d", arc).style("fill", function (b, c) {
-                    return subjectData[c].color
-                }),
-                chord = svg.selectAll(".chord").data(layout.chords).enter().append("path").attr("class", "chord").style("fill", function (b) {
-                    return subjectData[b.source.index].color
-                }).attr("d", path)   
-            </script>
-		</div>
-		<div>
-			<p>Visualisation of GM AHSN member organisation referrals data from NHS England for the last quarter of 2014. The figure used is a combined total for GP written referrals and other referrals. Although care has been taken to ensure the data is accurate this chart is not intended for production use and has not been validated. Christie Hospital data is not included as all Christie commissioning is directly from NHS England.</p>
-			<p> Based on code by <a href="http://www.infotrafford.org.uk/lab">Trafford Innovation and Intelligence Lab</a> and used with their kind permission.</p></div>
-		<div id="footer"></div>
-	</body>
+    #circle:hover path.fade {
+      display: none;
+    }
+
+    .centred {
+      text-align: center;
+    }
+  </style>
+  <script>
+    (function(i, s, o, g, r, a, m) {
+      i['GoogleAnalyticsObject'] = r;
+      i[r] = i[r] || function() {
+        (i[r].q = i[r].q || []).push(arguments)
+      }, i[r].l = 1 * new Date();
+      a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+      a.async = 1;
+      a.src = g;
+      m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-64309137-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+  <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
+</head>
+<body>
+  <div id="header">Greater Manchester Total Patient Referrals - Oct to December 2014 </div>
+  <div id="introduction" class="content fixedWidth">
+    <p>data source: <a href="http://www.england.nhs.uk/statistics/statistical-work-areas/hospital-activity/quarterly-hospital-activity/">nhs england </a> </p>
+  </div>
+  <div>
+    <p>Visualisation of GM AHSN member organisation referrals data from NHS England for the last quarter of 2014. The figure used is a combined total for GP written referrals and other referrals. Although care has been taken to ensure the data is accurate
+      this chart is not intended for production use and has not been validated. Christie Hospital data is not included as all Christie commissioning is directly from NHS England.</p>
+    <div id="main" class="content centred">
+      <script>
+        // TODO Sort out colour scheme
+        var subjectData = [{
+          "name": "5 BOROUGHS PARTNERSHIP NHS FT",
+          "color": "#FF3333 "
+        }, {
+          "name": "BOLTON NHS FOUNDATION TRUST",
+          "color": "#FF9933 "
+        }, {
+          "name": "BRIDGEWATER COMMUNITY HEALTHCARE NHS FT",
+          "color": "#0099CC "
+        }, {
+          "name": "CENTRAL MANCHESTER UHNFT",
+          "color": "#009999"
+        }, {
+          "name": "EAST CHESHIRE NHS TRUST",
+          "color": "#339933"
+        }, {
+          "name": "EAST LANCASHIRE HOSPITALS NHS TRUST",
+          "color": "#663399"
+        }, {
+          "name": "MANCHESTER MENTAL HEALTH AND SOCIAL CARE TRUST",
+          "color": "#FF3333 "
+        }, {
+          "name": "OTHER PROVIDERS",
+          "color": "#FF9933 "
+        }, {
+          "name": "PENNINE ACUTE HOSPITALS NHS TRUST",
+          "color": "#0099CC "
+        }, {
+          "name": "PENNINE CARE NHS FOUNDATION TRUST",
+          "color": "#009999"
+        }, {
+          "name": "SALFORD ROYAL NHS FOUNDATION TRUST",
+          "color": "#339933"
+        }, {
+          "name": "STOCKPORT NHS FOUNDATION TRUST",
+          "color": "#663399"
+        }, {
+          "name": "TAMESIDE HOSPITAL NHS FOUNDATION TRUST",
+          "color": "#FF3333 "
+        }, {
+          "name": "UNIVERSITY HOSPITAL OF SOUTH MANCHESTER NHS FT",
+          "color": "#0099CC "
+        }, {
+          "name": "WRIGHTINGTON, WIGAN AND LEIGH NHS FT",
+          "color": "#009999"
+        }, {
+          "name": "NHS BOLTON CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS BURY CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS CENTRAL MANCHESTER CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS EASTERN CHESHIRE CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS HEYWOOD, MIDDLETON AND ROCHDALE CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS NORTH MANCHESTER CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS OLDHAM CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS SALFORD CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS SOUTH MANCHESTER CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS STOCKPORT CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS TAMESIDE AND GLOSSOP CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS TRAFFORD CCG",
+          "color": "#666678"
+        }, {
+          "name": "NHS WIGAN BOROUGH CCG",
+          "color": "#666678"
+        }, {
+          "name": "OTHER COMMISSIONERS",
+          "color": "#666678"
+        }];
+
+        var relationshipMatrix = [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 208, 683],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20595, 0, 13, 3, 0, 22, 27, 1671, 6, 10, 7, 24, 1435, 1435],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1065, 0, 0, 80, 0, 0, 0, 0, 0, 0, 0, 184, 2648],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1258, 1704, 15259, 1107, 1605, 6361, 2071, 4434, 4869, 3577, 3333, 12942, 1164, 10055],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 8, 12569, 2, 2, 8, 9, 35, 568, 13, 39, 4, 3242],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 50, 5, 0, 19, 2, 3, 5, 4, 2, 3, 1, 9, 32182],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 482, 1, 11, 416, 8, 8, 382, 9, 7, 30, 1, 25],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2591, 1409, 1768, 2126, 3290, 2282, 2924, 3179, 1660, 1721, 82, 1459, 3052, 3052],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 260, 12078, 324, 30, 17065, 11047, 14543, 1018, 134, 77, 522, 50, 54, 21194],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 559, 1, 6, 391, 17, 426, 2, 8, 642, 235, 0, 2, 406],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1799, 2813, 1535, 739, 1799, 2017, 1362, 20451, 1009, 1537, 1415, 1984, 2192, 4220],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 8, 129, 1149, 12, 39, 67, 21, 146, 16833, 1190, 68, 10, 4427],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 16, 73, 1252, 7, 241, 13, 601, 12, 157, 16388, 13, 4, 2375],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 230, 233, 2043, 1464, 225, 404, 314, 367, 8023, 3564, 581, 6499, 271, 2362],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 424, 68, 15, 64, 88, 26, 48, 98, 17, 49, 78, 55, 21857, 4740],
+          [0, 20595, 0, 1258, 2, 41, 0, 2591, 260, 1, 1799, 9, 3, 230, 424, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 1065, 0, 1704, 1, 50, 2, 1409, 12078, 559, 2813, 8, 16, 233, 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 13, 0, 15259, 8, 5, 482, 1768, 324, 1, 1535, 129, 73, 2043, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 3, 0, 1107, 12569, 0, 1, 2126, 30, 6, 739, 1149, 1252, 314, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 80, 1605, 2, 19, 11, 3290, 17065, 391, 1799, 12, 7, 1464, 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 22, 0, 6361, 2, 2, 416, 3290, 11047, 17, 2017, 39, 241, 225, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 27, 0, 2071, 8, 3, 8, 2282, 14543, 426, 1362, 67, 13, 367, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 1671, 0, 4434, 9, 5, 8, 2924, 1018, 2, 20451, 21, 601, 404, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [1, 6, 0, 4869, 35, 4, 382, 3179, 134, 8, 1009, 146, 12, 8023, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 10, 0, 3577, 568, 2, 9, 1660, 77, 642, 1537, 16833, 157, 3564, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 7, 0, 3333, 13, 3, 7, 82, 522, 235, 1415, 1190, 16388, 581, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 24, 0, 12942, 39, 1, 30, 1459, 50, 0, 1984, 68, 13, 6499, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [208, 1435, 184, 1164, 4, 9, 1, 1459, 54, 2, 2192, 10, 4, 271, 21857, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [683, 1474, 2648, 10055, 3242, 32182, 25, 3052, 21194, 406, 4220, 4427, 2375, 2137, 4740, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ];
+
+        var width = 650,
+          height = 650,
+          chord = null,
+          outerRadius = Math.min(width, height) / 2 - 100,
+          innerRadius = outerRadius - 20,
+          r1 = height / 2,
+          r0 = r1 - 120,
+          width = width + 200,
+          height = height + 150,
+          arc = d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius),
+          layout = d3.layout.chord().padding(.04).sortSubgroups(d3.descending).sortChords(d3.ascending),
+          path = d3.svg.chord().radius(innerRadius),
+          svg = d3.select("#main").append("svg").attr("width", width).attr("height", height).append("g").attr("id", "circle").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+        svg.append("circle").attr("r", outerRadius);
+
+        function b(a, b) {
+          chord.classed("fade", function(a) {
+            return a.source.index !== b && a.target.index !== b
+          })
+        }
+
+        layout.matrix(relationshipMatrix);
+        var d = svg.selectAll(".group");
+        d.data(layout.groups).enter().append("g").attr("class", "group").on("mouseover", b),
+          svg.selectAll(".group").append("svg:text").each(function(a) {
+            a.angle = (a.startAngle + a.endAngle) / 2
+          }).attr("dy", ".35em").attr("text-anchor", function(a) {
+            return a.angle > Math.PI ? "end" : "start"
+          }).attr("transform", function(a) {
+            return "rotate(" + (180 * a.angle / Math.PI - 90) + ")translate(" + (r0 + 26) + ")" + (a.angle > Math.PI ? "rotate(180)" : "")
+          }).text(function(b, c) {
+            return subjectData[c].name
+          }),
+          svg.selectAll(".group").append("path").attr("id", function(a, b) {
+            return "group" + b
+          }).attr("d", arc).style("fill", function(b, c) {
+            return subjectData[c].color
+          }),
+          chord = svg.selectAll(".chord").data(layout.chords).enter().append("path").attr("class", "chord").style("fill", function(b) {
+            return subjectData[b.source.index].color
+          }).attr("d", path)
+      </script>
+    </div>
+    <p>Created by <a href="http://www.gmahsn.org">Greater Manchester Academic Health Science Network.</a></p>
+    <p>Based on code by <a href="http://www.infotrafford.org.uk/lab">Trafford Innovation and Intelligence Lab</a> and used with their kind permission.</p>
+  </div>
+  <div id="footer"></div>
+  <a href="https://github.com/GMAHSN/gm-referral-chord">
+    <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
+    alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png">
+  </a>
+</body>
 </html>
